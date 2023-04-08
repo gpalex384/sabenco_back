@@ -3,7 +3,6 @@ from typing import List
 from pydantic import Field, BaseModel
 from pydantic.schema import Any, Union
 from pydantic.utils import GetterDict
-from sqlalchemy import Date
 
 class UserBase(BaseModel):
     password: str

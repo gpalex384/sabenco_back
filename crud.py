@@ -1,5 +1,5 @@
 import models, schemas
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 
 # Read all the events that belong to a given category whose start date is between two dates
 def get_event_by_category(db: Session, startdate: str, enddate:str, category:str):

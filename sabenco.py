@@ -2,8 +2,8 @@ from typing import List
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 
-import crud, models, schemas
-from database import SessionLocal, engine
+import crud, schemas
+from database import SessionLocal
 
 app = FastAPI()
 
