@@ -1,6 +1,23 @@
-from sqlalchemy import Column, Date, ForeignKey, String
+from sqlalchemy import Column, Date, ForeignKey, String, text
 from database import Base
 from sqlalchemy.orm import relationship
+
+class User(Base):
+    __tablename__="user"
+    id= Column(String, primary_key=True, index=True)
+    username=Column(String, unique=True)
+    usermail=Column(String, unique=True)
+    password=Column(String)
+    role_id=Column(ForeignKey("role.id"))
+
+    role=relationship("Role", back_populates="users")
+
+class Role(Base):
+    __tablename__="role"
+    id=Column(String, primary_key=True, index=True)
+    name=Column(String, unique=True)
+
+    users=relationship("User", back_populates="role")
 
 class EventCategory(Base):
     __tablename__="eventcategory"
@@ -12,7 +29,7 @@ class EventCategory(Base):
 
 class Event(Base):
     __tablename__="event"
-    id= Column(String, primary_key=True, index=True)
+    id= Column(String, primary_key=True, index=True, default=text('uuid()'))
     title = Column(String)
     detail = Column(String)
     startdate = Column(Date)
@@ -20,6 +37,8 @@ class Event(Base):
     category_id = Column(ForeignKey("category.id"))
     created = Column(Date)
     updated = Column(Date)
+    createdby = Column(String)
+    updatedby = Column(String)
 
     categories = relationship("EventCategory", back_populates="event")
 
