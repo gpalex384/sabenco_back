@@ -50,6 +50,7 @@ class EventBase(BaseModel):
     detail: Union[str,None]
     startdate: date
     enddate: Union[date,None]
+    pub_requested: Union[int,None]
     
     class Config:
         orm_mode = True

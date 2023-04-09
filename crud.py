@@ -9,7 +9,7 @@ def get_event_by_category(db: Session, startdate: str, enddate:str, category:str
 
 # Create an event given the title, detail, start date and end date
 def create_event(db: Session, event: schemas.EventBase, user_id: str):
-    db_event = models.Event(**event.dict())
+    db_event = models.EventDraft(**event.dict())
     db_event.createdby = user_id
     db_event.updatedby = user_id
     db.add(db_event)

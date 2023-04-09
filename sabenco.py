@@ -32,7 +32,7 @@ def read_user(user_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
 
-# Create an event given the title, detail, start date and end date
+# Create an event draft given the title, detail, start date, end date and publication requested
 @app.post("/users/{user_id}/events", response_model = schemas.EventBase)
 def create_event_by_user(event:schemas.EventBase, user_id: str, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_id(db, user_id=user_id)
