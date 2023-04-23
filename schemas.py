@@ -28,7 +28,7 @@ class Role(BaseModel):
 
 class EventCategoryGetter(GetterDict):
     def get(self, key: str, default: Any = None) -> Any:
-        if key in {'id', 'name', 'description','categorytype_id','created','updated'}:
+        if key in {'id', 'name', 'description','created','updated'}:
             return getattr(self._obj.category, key)
         else:
             return super(EventCategoryGetter, self).get(key, default)
@@ -37,7 +37,6 @@ class EventCategory(BaseModel):
     id: str = Field(alias='id')
     name: str
     description: Union[str,None]
-    categorytype_id: str
     created: date
     updated: date
     
@@ -50,7 +49,6 @@ class EventBase(BaseModel):
     detail: Union[str,None]
     startdate: date
     enddate: Union[date,None]
-    pub_requested: Union[int,None]
     
     class Config:
         orm_mode = True
@@ -61,6 +59,21 @@ class Event(EventBase):
     updated: date
 
     categories: List[EventCategory]
+    
+    class Config:
+        orm_mode = True
+
+class EventDraftBase(EventBase):
+    pub_requested: Union[int,None]
+    
+    class Config:
+        orm_mode = True
+
+class EventDraft(EventDraftBase):
+    id: str = Field(alias='id')
+    created: date
+    updated: date
+    moderator_comment: Union[str,None]
     
     class Config:
         orm_mode = True
@@ -91,7 +104,6 @@ class Category(BaseModel):
     id: str = Field(alias='id')
     name: str
     description: Union[str,None]
-    categorytype_id: str
     created: date
     updated: date
     
@@ -100,13 +112,3 @@ class Category(BaseModel):
     class Config:
         orm_mode = True
 
-class CategoryType(BaseModel):
-    id: str
-    type: str
-    created: date
-    updated: date
-
-    categories: List[Category] = []
-
-    class Config:
-        orm_mode = True

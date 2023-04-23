@@ -57,6 +57,7 @@ class EventDraft(Base):
     createdby = Column(String)
     updatedby = Column(String)
     pub_requested = Column(Boolean, default=0)
+    moderator_comment = Column(String)
     published = Column(Boolean, default=0)
     publishdate = Column(Date)
     obsolete = Column(Boolean, default=0)
@@ -70,16 +71,8 @@ class Category(Base):
     id = Column(String, primary_key=True, index=True)
     name = Column(String)
     description = Column(String)
-    categorytype_id = Column(ForeignKey("categorytype.id"))
     created = Column(Date)
     updated = Column(Date)
 
     events = relationship("EventCategory", back_populates="category")
-    categorytype = relationship("CategoryType", back_populates="categories")
 
-class CategoryType(Base):
-    __tablename__="categorytype"
-    id = Column(String, primary_key=True, index=True)
-    type = Column(String)
-
-    categories = relationship("Category", back_populates="categorytype")
