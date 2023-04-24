@@ -66,13 +66,31 @@ def create_event_draft(eventdata:schemas.EventDraftBase, user_id: str, event_id:
     return db_created_eventdraft
 
 # Accept an event draft, making it become a published event
-@app.post("/users/{user_id}/events/{eventdraft_id}", response_model = schemas.Event)
+@app.post("/users/{user_id}/events/publish/{eventdraft_id}", response_model = schemas.Event)
 def publish_event(eventdraft_id: str, user_id: str, db: Session = Depends(get_db)):
+    # Exception control
     db_user = crud.get_user_by_id(db, user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     db_eventdraft = crud.get_eventdraft_by_id(db, eventdraft_id=eventdraft_id)
     if db_eventdraft is None:
         raise HTTPException(status_code=404, detail="Event draft not found")
-    db_published_event = crud.publish_event(db, eventdraft_id, user_id)
+    # Publish eventdraft
+    db_published_event = crud.publish_eventdraft(db, eventdraft_id, user_id)
     return db_published_event
+
+# Reject an event draft, adding a comment from the moderator
+@app.put("/users/{user_id}/events/reject/{eventdraft_id}", response_model = schemas.EventDraft)
+def reject_event(comment: str, eventdraft_id: str, user_id: str, db: Session = Depends(get_db)):
+    # Exception control
+    if comment is None or comment == '':
+        raise HTTPException(status_code=401, detail="The comment is required for rejecting")
+    db_user = crud.get_user_by_id(db, user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    db_eventdraft = crud.get_eventdraft_by_id(db, eventdraft_id=eventdraft_id)
+    if db_eventdraft is None:
+        raise HTTPException(status_code=404, detail="Event draft not found")
+    # Edit eventdraft
+    db_rejected_event = crud.reject_eventdraft(db, db_eventdraft, user_id, comment)
+    return db_rejected_event
