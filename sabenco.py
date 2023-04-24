@@ -65,6 +65,19 @@ def create_event_draft(eventdata:schemas.EventDraftBase, user_id: str, event_id:
     db_created_eventdraft = crud.create_eventdraft(db, eventdata, user_id, event_id)
     return db_created_eventdraft
 
+# Create an event draft given the title, detail, start date, end date and publication requested
+@app.put("/users/{user_id}/eventdraft/{eventdraft_id}", response_model = schemas.EventDraft)
+def edit_event_draft(eventdata:schemas.EventDraftBase, user_id: str, eventdraft_id: str, db: Session = Depends(get_db)):
+    # Exception control
+    db_user = crud.get_user_by_id(db, user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    db_eventdraft = crud.get_eventdraft_by_id(db, eventdraft_id)
+    if db_eventdraft is None:
+        raise HTTPException(status_code=404, detail="Event draft not found")
+    db_edited_eventdraft = crud.edit_eventdraft(db, eventdata, user_id, db_eventdraft)
+    return db_edited_eventdraft
+
 # Accept an event draft, making it become a published event
 @app.post("/users/{user_id}/events/publish/{eventdraft_id}", response_model = schemas.Event)
 def publish_event(eventdraft_id: str, user_id: str, db: Session = Depends(get_db)):

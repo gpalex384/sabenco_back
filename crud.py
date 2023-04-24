@@ -20,6 +20,21 @@ def create_eventdraft(db: Session, eventdata: schemas.EventDraftBase, user_id: s
     db.refresh(db_eventdraft)
     return db_eventdraft
 
+# Edit an event draft given the title, detail, start date, end date and publication requested
+def edit_eventdraft(db: Session, eventdata: schemas.EventDraftBase, user_id: str, db_eventdraft: models.EventDraft):
+    eventdraft_data = eventdata.dict()
+    db_eventdraft.updatedby = user_id
+    db_eventdraft.updated = datetime.datetime.now()
+    db_eventdraft.title = eventdraft_data.get('title')
+    db_eventdraft.detail = eventdraft_data.get('detail')
+    db_eventdraft.startdate = eventdraft_data.get('startdate')
+    db_eventdraft.enddate = eventdraft_data.get('enddate')
+    db_eventdraft.pub_requested = eventdraft_data.get('pub_requested')
+    db.add(db_eventdraft)
+    db.commit()
+    db.refresh(db_eventdraft)
+    return db_eventdraft
+
 def get_event_by_id(db: Session, event_id: str):
     return db.query(models.Event).filter(models.Event.id == event_id).first()
 
