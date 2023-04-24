@@ -57,6 +57,7 @@ class Event(EventBase):
     id: str = Field(alias='id')
     created: date
     updated: date
+    published: bool
 
     categories: List[EventCategory]
     
@@ -64,6 +65,7 @@ class Event(EventBase):
         orm_mode = True
 
 class EventDraftBase(EventBase):
+    event_id: Union[str,None]
     pub_requested: Union[int,None]
     
     class Config:
@@ -80,7 +82,7 @@ class EventDraft(EventDraftBase):
 
 class CategoryEventGetter(GetterDict):
     def get(self, key: str, default: Any = None) -> Any:
-        if key in {'id', 'title', 'detail','startdate','enddate', 'created', 'updated'}:
+        if key in {'id', 'title', 'detail','startdate','enddate', 'created', 'updated', 'published'}:
             return getattr(self._obj.event, key)
         else:
             return super(CategoryEventGetter, self).get(key, default)
@@ -94,6 +96,7 @@ class CategoryEvent(BaseModel):
     enddate: Union[date,None]
     created: date
     updated: date
+    published: bool
     
     class Config:
         getter_dict = CategoryEventGetter

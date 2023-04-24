@@ -40,6 +40,7 @@ class Event(Base):
     updated = Column(Date)
     createdby = Column(String)
     updatedby = Column(String)
+    published = Column(Boolean)
 
     categories = relationship("EventCategory", back_populates="event")
     eventdrafts = relationship("EventDraft", back_populates="event")

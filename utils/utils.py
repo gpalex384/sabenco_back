@@ -1,4 +1,5 @@
 import datetime
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
 import models, crud
@@ -27,3 +28,31 @@ class Utils:
         db.commit()
         db.refresh(db_event)
         return db_event
+    
+    def validate_user(db: Session, user_id: str):
+        db_user = crud.get_user_by_id(db, user_id)
+        if db_user is None:
+            raise HTTPException(status_code=404, detail="User not found")
+        return db_user
+        
+    def validate_event(db: Session, event_id: str):
+        db_event = crud.get_event_by_id(db, event_id)
+        if db_event is None:
+            raise HTTPException(status_code=404, detail="Event not found")
+        return db_event
+        
+    def validate_eventdraft(db: Session, eventdraft_id: str):
+        db_eventdraft = crud.get_eventdraft_by_id(db, eventdraft_id)
+        if db_eventdraft is None:
+            raise HTTPException(status_code=404, detail="Event draft not found")
+        return db_eventdraft
+        
+    def validate_comment(db: Session, comment: str):
+        if comment is None or comment == '':
+            raise HTTPException(status_code=401, detail="The comment is required for rejecting")
+        
+    def validate_category(db: Session, category_id: str):
+        db_category = crud.get_category_by_id(db, category_id=category_id)
+        if db_category is None:
+            raise HTTPException(status_code=404, detail="Category not found")
+        return db_category

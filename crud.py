@@ -61,6 +61,17 @@ def publish_eventdraft(db: Session, eventdraft:str, user_id:str):
     
     return db_event
 
+def publish_unpublish_event(db: Session, db_event: models.Event, user_id: str, publish: bool):
+    # Unpublish event
+    db_event.published = publish
+    db_event.updated = datetime.datetime.now()
+    db_event.updatedby = user_id
+    db.add(db_event)
+    db.commit()
+    db.refresh(db_event)
+
+    return db_event
+
 # Publishes an event draft into an event
 def reject_eventdraft(db: Session, db_eventdraft:models.EventDraft, user_id:str, comment:str):
     # Update eventdraft
@@ -84,3 +95,8 @@ def get_event_by_id(db: Session, event_id: str):
 
 def get_eventdraft_by_user_id(db: Session, user_id: str):
     return db.query(models.EventDraft).filter(models.EventDraft.createdby == user_id).all()
+
+def get_eventdrafts_by_event(db: Session, event_id: str):
+    return db.query(models.EventDraft).filter(models.EventDraft.event_id == event_id, 
+                                              models.EventDraft.obsolete == False,
+                                              models.EventDraft.published == True).all()
