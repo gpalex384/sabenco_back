@@ -20,6 +20,26 @@ def create_eventdraft(db: Session, eventdata: schemas.EventDraftBase, user_id: s
     db.refresh(db_eventdraft)
     return db_eventdraft
 
+def create_category(db: Session, categorydata: schemas.CategoryBase, user_id: str):
+    db_category = models.Category(**categorydata.dict())
+    db_category.createdby = user_id
+    db_category.updatedby = user_id
+    db.add(db_category)
+    db.commit()
+    db.refresh(db_category)
+    return db_category
+
+def edit_category(db: Session, categorydata: schemas.CategoryBase, user_id: str, category_id: str):
+    db_category = get_category_by_id(db, category_id)
+    db_category.updated = datetime.datetime.now()
+    db_category.updatedby = user_id
+    db_category.name = categorydata.name
+    db_category.description = categorydata.description
+    db.add(db_category)
+    db.commit()
+    db.refresh(db_category)
+    return db_category
+
 # Edit an event draft given the title, detail, start date, end date and publication requested
 def edit_eventdraft(db: Session, eventdata: schemas.EventDraftBase, user_id: str, db_eventdraft: models.EventDraft):
     eventdraft_data = eventdata.dict()
@@ -41,6 +61,12 @@ def get_event_by_id(db: Session, event_id: str):
 # Get the user data given the userId
 def get_user_by_id(db: Session, user_id: str):
     return db.query(models.User).filter(models.User.id == user_id).first()
+
+# Get the user data given the userId
+def get_useradmin_by_id(db: Session, user_id: str):
+    admin_role_id = db.query(models.Role).filter(models.Role.name == 'admin').first().id
+    return db.query(models.User).filter(models.User.id == user_id,
+                                        models.User.role_id == admin_role_id).first()
 
 def get_category_by_id(db: Session, category_id: str):
     return db.query(models.Category).filter(models.Category.id == category_id).first()

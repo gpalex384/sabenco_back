@@ -69,11 +69,13 @@ class EventDraft(Base):
 
 class Category(Base):
     __tablename__="category"
-    id = Column(String, primary_key=True, index=True)
+    id = Column(String, primary_key=True, index=True, default=text('uuid()'))
     name = Column(String)
     description = Column(String)
     created = Column(Date)
     updated = Column(Date)
+    createdby = Column(String)
+    updatedby = Column(String)
 
     events = relationship("EventCategory", back_populates="category")
 

@@ -34,6 +34,12 @@ class Utils:
         if db_user is None:
             raise HTTPException(status_code=404, detail="User not found")
         return db_user
+    
+    def validate_useradmin(db: Session, user_id: str):
+        db_useradmin = crud.get_useradmin_by_id(db, user_id)
+        if db_useradmin is None:
+            raise HTTPException(status_code=401, detail="User is not an administrator")
+        return db_useradmin
         
     def validate_event(db: Session, event_id: str):
         db_event = crud.get_event_by_id(db, event_id)

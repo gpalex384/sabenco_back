@@ -4,6 +4,13 @@ from pydantic import Field, BaseModel
 from pydantic.schema import Any, Union
 from pydantic.utils import GetterDict
 
+class UserRoleGetter(GetterDict):
+    def get(self, key: str, default: Any = None) -> Any:
+        if key in {'id', 'name'}:
+            return getattr(self._obj.role, key)
+        else:
+            return super(UserRoleGetter, self).get(key, default)
+
 class UserBase(BaseModel):
     password: str
 
@@ -14,7 +21,8 @@ class User(UserBase):
     role_id: str
     
     class Config:
-            orm_mode = True
+        orm_mode = True
+        
 
 class Role(BaseModel):
     id: str
@@ -24,7 +32,7 @@ class Role(BaseModel):
 
     class Config:
         orm_mode = True
-
+        getter_dict = UserRoleGetter
 
 class EventCategoryGetter(GetterDict):
     def get(self, key: str, default: Any = None) -> Any:
@@ -102,11 +110,12 @@ class CategoryEvent(BaseModel):
         getter_dict = CategoryEventGetter
         orm_mode = True
     
-
-class Category(BaseModel):
-    id: str = Field(alias='id')
+class CategoryBase(BaseModel):
     name: str
     description: Union[str,None]
+
+class Category(CategoryBase):
+    id: str = Field(alias='id')
     created: date
     updated: date
     

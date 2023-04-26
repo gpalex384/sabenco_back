@@ -105,3 +105,22 @@ def publish_event(event_id: str, user_id: str, db: Session = Depends(get_db)):
     db_published_event = crud.publish_unpublish_event(db, db_event, user_id, True)
     return db_published_event
 
+@app.post("/users/{user_id}/category/create", response_model= schemas.Category)
+def create_category(user_id: str, categorydata: schemas.CategoryBase, db: Session = Depends(get_db)):
+    # Exception control
+    Utils.validate_user(db, user_id)
+    Utils.validate_useradmin(db, user_id)
+    # Create category
+    db_category = crud.create_category(db, categorydata, user_id)
+    return db_category
+
+@app.put("/users/{user_id}/category/update/{category_id}", response_model= schemas.Category)
+def create_category(user_id: str, category_id: str, categorydata: schemas.CategoryBase, db: Session = Depends(get_db)):
+    # Exception control
+    Utils.validate_user(db, user_id)
+    Utils.validate_useradmin(db, user_id)
+    Utils.validate_category(db, category_id)
+    # Update category
+    db_category = crud.edit_category(db, categorydata, user_id, category_id)
+    return db_category
+
