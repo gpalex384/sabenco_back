@@ -115,7 +115,7 @@ def create_category(user_id: str, categorydata: schemas.CategoryBase, db: Sessio
     return db_category
 
 @app.put("/users/{user_id}/category/update/{category_id}", response_model= schemas.Category)
-def create_category(user_id: str, category_id: str, categorydata: schemas.CategoryBase, db: Session = Depends(get_db)):
+def edit_category(user_id: str, category_id: str, categorydata: schemas.CategoryBase, db: Session = Depends(get_db)):
     # Exception control
     Utils.validate_user(db, user_id)
     Utils.validate_useradmin(db, user_id)
@@ -124,3 +124,12 @@ def create_category(user_id: str, category_id: str, categorydata: schemas.Catego
     db_category = crud.edit_category(db, categorydata, user_id, category_id)
     return db_category
 
+@app.delete("/users/{user_id}/category/delete/{category_id}")
+def delete_category(user_id: str, category_id: str, db: Session = Depends(get_db)):
+    # Exception control
+    Utils.validate_user(db, user_id)
+    Utils.validate_useradmin(db, user_id)
+    Utils.validate_category(db, category_id)
+    # Delete category
+    deleted_category_name = crud.delete_category(db, category_id)
+    return {"ok": "The category '" + deleted_category_name + "' has been deleted"}

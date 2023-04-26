@@ -40,6 +40,19 @@ def edit_category(db: Session, categorydata: schemas.CategoryBase, user_id: str,
     db.refresh(db_category)
     return db_category
 
+def delete_category(db: Session, category_id: str):
+    # Delete eventcategory links
+    db_eventcategory_list = get_eventcategory_by_category_id(db, category_id)
+    for db_eventcategory in db_eventcategory_list:
+        db.delete(db_eventcategory)
+        db.commit()
+    # Delete category
+    db_category = get_category_by_id(db, category_id)
+    db_category_name = db_category.name
+    db.delete(db_category)
+    db.commit()
+    return db_category_name
+
 # Edit an event draft given the title, detail, start date, end date and publication requested
 def edit_eventdraft(db: Session, eventdata: schemas.EventDraftBase, user_id: str, db_eventdraft: models.EventDraft):
     eventdraft_data = eventdata.dict()
@@ -70,6 +83,9 @@ def get_useradmin_by_id(db: Session, user_id: str):
 
 def get_category_by_id(db: Session, category_id: str):
     return db.query(models.Category).filter(models.Category.id == category_id).first()
+
+def get_eventcategory_by_category_id(db: Session, category_id: str):
+    return db.query(models.EventCategory).filter(models.EventCategory.category_id == category_id).all()
 
 # Publishes an event draft into an event
 def publish_eventdraft(db: Session, eventdraft:str, user_id:str):

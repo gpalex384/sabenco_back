@@ -76,6 +76,7 @@ class Category(Base):
     updated = Column(Date)
     createdby = Column(String)
     updatedby = Column(String)
+    active = Column(Boolean)
 
     events = relationship("EventCategory", back_populates="category")
 
