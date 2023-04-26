@@ -53,6 +53,15 @@ def delete_category(db: Session, category_id: str):
     db.commit()
     return db_category_name
 
+def assign_category_to_event(db: Session, db_event: models.Event, db_category: models.Category, user_id: str):
+    db_eventcategory = models.EventCategory()
+    db_eventcategory.category_id = db_category.id
+    db_eventcategory.event_id = db_event.id
+    db_eventcategory.createdby = user_id
+    db_eventcategory.updatedby = user_id
+    db.add(db_eventcategory)
+    db.commit()
+
 # Edit an event draft given the title, detail, start date, end date and publication requested
 def edit_eventdraft(db: Session, eventdata: schemas.EventDraftBase, user_id: str, db_eventdraft: models.EventDraft):
     eventdraft_data = eventdata.dict()

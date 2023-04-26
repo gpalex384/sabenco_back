@@ -23,6 +23,10 @@ class EventCategory(Base):
     __tablename__="eventcategory"
     event_id = Column(ForeignKey("event.id"), primary_key=True, index=True)
     category_id = Column(ForeignKey("category.id"), primary_key=True, index=True)
+    created = Column(Date)
+    updated = Column(Date)
+    createdby = Column(String)
+    updatedby = Column(String)
 
     event = relationship("Event", back_populates="categories")
     category = relationship("Category", back_populates="events")

@@ -105,6 +105,17 @@ def publish_event(event_id: str, user_id: str, db: Session = Depends(get_db)):
     db_published_event = crud.publish_unpublish_event(db, db_event, user_id, True)
     return db_published_event
 
+@app.post("/users/{user_id}/event/{event_id}/category/{category_id}")
+def assign_category_to_event(event_id: str, user_id: str, category_id: str, db: Session = Depends(get_db)):
+    # Exception control
+    Utils.validate_user(db, user_id)
+    Utils.validate_useradmin(db, user_id)
+    db_event = Utils.validate_event(db, event_id)
+    db_category = Utils.validate_category(db, category_id)
+    # Assign category to event
+    crud.assign_category_to_event(db, db_event, db_category, user_id)
+    return {"ok": "The event '%s' has been classified in the category '%s'" % (db_event.title,db_category.name)}
+
 @app.post("/users/{user_id}/category/create", response_model= schemas.Category)
 def create_category(user_id: str, categorydata: schemas.CategoryBase, db: Session = Depends(get_db)):
     # Exception control
