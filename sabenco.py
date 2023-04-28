@@ -66,7 +66,7 @@ def edit_eventdraft(eventdata:schemas.EventDraftBase, user_id: str, eventdraft_i
     return db_edited_eventdraft
 
 # Accept an event draft, making it become a published event
-@app.post("/users/{user_id}/eventdraft/publish/{eventdraft_id}", response_model = schemas.Event)
+@app.post("/users/{user_id}/eventdraft/{eventdraft_id}/publish", response_model = schemas.Event)
 def publish_eventdraft(eventdraft_id: str, user_id: str, db: Session = Depends(get_db)):
     # Exception control
     Utils.validate_user(db, user_id)
@@ -76,7 +76,7 @@ def publish_eventdraft(eventdraft_id: str, user_id: str, db: Session = Depends(g
     return db_published_event
 
 # Reject an event draft, adding a comment from the moderator
-@app.put("/users/{user_id}/eventdraft/reject/{eventdraft_id}", response_model = schemas.EventDraft)
+@app.put("/users/{user_id}/eventdraft/{eventdraft_id}/reject", response_model = schemas.EventDraft)
 def reject_eventdraft(comment: str, eventdraft_id: str, user_id: str, db: Session = Depends(get_db)):
     # Exception control
     Utils.validate_comment(db, comment)
@@ -87,7 +87,7 @@ def reject_eventdraft(comment: str, eventdraft_id: str, user_id: str, db: Sessio
     return db_rejected_eventdraft
 
 # Unpublish an event
-@app.put("/users/{user_id}/event/unpublish/{event_id}", response_model = schemas.Event)
+@app.put("/users/{user_id}/event/{event_id}/unpublish", response_model = schemas.Event)
 def unpublish_event(event_id: str, user_id: str, db: Session = Depends(get_db)):
     # Exception control
     Utils.validate_user(db, user_id)
@@ -96,7 +96,7 @@ def unpublish_event(event_id: str, user_id: str, db: Session = Depends(get_db)):
     db_unpublished_event = crud.publish_unpublish_event(db, db_event, user_id, False)
     return db_unpublished_event
 
-@app.put("/users/{user_id}/event/publish/{event_id}", response_model = schemas.Event)
+@app.put("/users/{user_id}/event/{event_id}/publish", response_model = schemas.Event)
 def publish_event(event_id: str, user_id: str, db: Session = Depends(get_db)):
     # Exception control
     Utils.validate_user(db, user_id)
@@ -125,7 +125,7 @@ def create_category(user_id: str, categorydata: schemas.CategoryBase, db: Sessio
     db_category = crud.create_category(db, categorydata, user_id)
     return db_category
 
-@app.put("/users/{user_id}/category/update/{category_id}", response_model= schemas.Category)
+@app.put("/users/{user_id}/category/{category_id}/update", response_model= schemas.Category)
 def edit_category(user_id: str, category_id: str, categorydata: schemas.CategoryBase, db: Session = Depends(get_db)):
     # Exception control
     Utils.validate_user(db, user_id)
@@ -135,7 +135,7 @@ def edit_category(user_id: str, category_id: str, categorydata: schemas.Category
     db_category = crud.edit_category(db, categorydata, user_id, category_id)
     return db_category
 
-@app.delete("/users/{user_id}/category/delete/{category_id}")
+@app.delete("/users/{user_id}/category/{category_id}/delete")
 def delete_category(user_id: str, category_id: str, db: Session = Depends(get_db)):
     # Exception control
     Utils.validate_user(db, user_id)
