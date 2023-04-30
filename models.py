@@ -9,6 +9,10 @@ class User(Base):
     usermail=Column(String, unique=True)
     password=Column(String)
     role_id=Column(ForeignKey("role.id"))
+    created = Column(Date)
+    updated = Column(Date)
+    createdby = Column(String)
+    updatedby = Column(String)
 
     role=relationship("Role", back_populates="users")
 
@@ -16,6 +20,10 @@ class Role(Base):
     __tablename__="role"
     id=Column(String, primary_key=True, index=True)
     name=Column(String, unique=True)
+    created = Column(Date)
+    updated = Column(Date)
+    createdby = Column(String)
+    updatedby = Column(String)
 
     users=relationship("User", back_populates="role")
     categories=relationship("CategoryRole", back_populates="role")

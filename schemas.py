@@ -28,8 +28,10 @@ class EventGetter(GetterDict):
 class UserBase(BaseModel):
     username: str
     usermail: str
+    created: date
+    updated: date
     class Config:
-            orm_mode = True
+        orm_mode = True
 
 class RoleBase(BaseModel):
     name: str

@@ -28,9 +28,9 @@ def read_events_by_dates_and_category(category_id: str, startdate: str, enddate:
         datetime.date.fromisoformat(startdate)
         datetime.date.fromisoformat(enddate)
     except ValueError:
-        raise HTTPException(status_code=401, detail="Incorrect data format, should be YYYY-MM-DD")
+        raise HTTPException(status_code=400, detail="Incorrect data format, should be YYYY-MM-DD")
     Utils.validate_category(db, category_id)
-    db_event_by_category = crud.get_event_by_category(db, category_id, startdate, enddate)
+    db_event_by_category = crud.get_event_by_category(db, startdate, enddate, category_id)
     return db_event_by_category
 
 # Get the user data given the userId
@@ -38,6 +38,16 @@ def read_events_by_dates_and_category(category_id: str, startdate: str, enddate:
 @app.get("/users/{user_id}", response_model=schemas.User)
 def read_user(user_id: str, db: Session = Depends(get_db)):
     return Utils.validate_user(db, user_id)
+
+# Get role by id
+@app.get("/roles/{role_id}", response_model=schemas.Role)
+def read_role(role_id: str, db: Session = Depends(get_db)):
+    return Utils.validate_role(db, role_id)
+
+# Get category by id
+@app.get("/categories/{category_id}", response_model=schemas.Category)
+def read_category(category_id: str, db: Session = Depends(get_db)):
+    return Utils.validate_category(db, category_id)
 
 # Get event drafts created by user (not posted / pending moderation)
 @app.get("/users/{user_id}/eventdrafts", response_model=List[schemas.EventDraft])
