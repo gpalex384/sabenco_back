@@ -46,6 +46,12 @@ class Utils:
         if db_event is None:
             raise HTTPException(status_code=404, detail="Event not found")
         return db_event
+    
+    def validate_role(db: Session, role_id: str):
+        db_role = crud.get_role_by_id(db, role_id)
+        if db_role is None:
+            raise HTTPException(status_code=404, detail="Role not found")
+        return db_role
         
     def validate_eventdraft(db: Session, eventdraft_id: str):
         db_eventdraft = crud.get_eventdraft_by_id(db, eventdraft_id)

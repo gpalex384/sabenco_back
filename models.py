@@ -18,6 +18,7 @@ class Role(Base):
     name=Column(String, unique=True)
 
     users=relationship("User", back_populates="role")
+    categories=relationship("CategoryRole", back_populates="role")
 
 class EventCategory(Base):
     __tablename__="eventcategory"
@@ -83,4 +84,18 @@ class Category(Base):
     active = Column(Boolean)
 
     events = relationship("EventCategory", back_populates="category")
+    roles = relationship("CategoryRole", back_populates="category")
+
+class CategoryRole(Base):
+    __tablename__="categoryrole"
+    role_id = Column(ForeignKey("role.id"), primary_key=True, index=True)
+    category_id = Column(ForeignKey("category.id"), primary_key=True, index=True)
+    created = Column(Date)
+    updated = Column(Date)
+    createdby = Column(String)
+    updatedby = Column(String)
+
+    role = relationship("Role", back_populates="categories")
+    category = relationship("Category", back_populates="roles")
+
 

@@ -62,6 +62,15 @@ def assign_category_to_event(db: Session, db_event: models.Event, db_category: m
     db.add(db_eventcategory)
     db.commit()
 
+def assign_category_to_role(db: Session, db_role: models.Role, db_category: models.Category, user_id: str):
+    db_categoryrole = models.CategoryRole()
+    db_categoryrole.category_id = db_category.id
+    db_categoryrole.role_id = db_role.id
+    db_categoryrole.createdby = user_id
+    db_categoryrole.updatedby = user_id
+    db.add(db_categoryrole)
+    db.commit()
+
 # Edit an event draft given the title, detail, start date, end date and publication requested
 def edit_eventdraft(db: Session, eventdata: schemas.EventDraftBase, user_id: str, db_eventdraft: models.EventDraft):
     eventdraft_data = eventdata.dict()
@@ -151,3 +160,6 @@ def get_eventdrafts_by_event(db: Session, event_id: str):
     return db.query(models.EventDraft).filter(models.EventDraft.event_id == event_id, 
                                               models.EventDraft.obsolete == False,
                                               models.EventDraft.published == True).all()
+
+def get_role_by_id(db: Session, role_id: str):
+    return db.query(models.Role).filter(models.Role.id == role_id).first()
