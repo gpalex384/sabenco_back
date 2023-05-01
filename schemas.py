@@ -103,6 +103,19 @@ class CategoryEvent(BaseModel):
         getter_dict = EventGetter
         orm_mode = True
 
+class LinkEvent(BaseModel):
+    id: str = Field(alias='id')
+    title: str
+    detail: Union[str,None]
+    startdate: date
+    enddate: Union[date,None]
+    created: date
+    updated: date
+    published: bool
+    class Config:
+        getter_dict = EventGetter
+        orm_mode = True
+
 class EventDraftBase(EventBase):
     event_id: Union[str,None]
     pub_requested: Union[int,None]
@@ -130,7 +143,7 @@ class Event(EventBase):
     created: date
     updated: date
     published: bool
-    categories: List[EventCategory]
+    categories: List[EventCategory] = []
     class Config:
         orm_mode = True
 
@@ -146,8 +159,8 @@ class Category(CategoryBase):
     id: str = Field(alias='id')
     created: date
     updated: date
-    events: List[CategoryEvent]
-    roles: List[CategoryRole]
+    events: List[CategoryEvent] = []
+    roles: List[CategoryRole] = []
     class Config:
         orm_mode = True
 

@@ -33,6 +33,13 @@ def read_events_by_dates_and_category(category_id: str, startdate: str, enddate:
     db_event_by_category = crud.get_event_by_category(db, startdate, enddate, category_id)
     return db_event_by_category
 
+# Get the events related to an event
+@app.get("/event/{event_id}/linkedevents")
+def read_linked_events(event_id: str, db: Session = Depends(get_db)):
+    Utils.validate_event(db, event_id)
+    related_events = crud.get_related_events_by_event_id(db, event_id)
+    return related_events
+
 # Get the user data given the userId
 #TODO encrypt password 
 @app.get("/users/{user_id}", response_model=schemas.User)
@@ -126,6 +133,18 @@ def assign_category_to_event(event_id: str, user_id: str, category_id: str, db: 
     # Assign category to event
     crud.assign_category_to_event(db, db_event, db_category, user_id)
     return {"ok": "The event '%s' has been classified in the category '%s'" % (db_event.title,db_category.name)}
+
+# Link two events
+@app.post("/users/{user_id}/eventlink/{event_id_1}/{event_id_2}")
+def link_two_events(user_id: str, event_id_1: str, event_id_2: str, description: Union[None,str] = None, db: Session = Depends(get_db)):
+    # Exception control
+    Utils.validate_user(db, user_id)
+    Utils.validate_useradmin(db, user_id)
+    db_event_1 = Utils.validate_event(db, event_id_1)
+    db_event_2 = Utils.validate_event(db, event_id_2)
+    # Link events
+    crud.link_events(db, db_event_1, db_event_2, user_id, description)
+    return {"ok": "The events '%s' and '%s' have been linked" % (db_event_1.title,db_event_2.title)}
 
 # Assign category to role
 @app.post("/users/{user_id}/category/{category_id}/role/{role_id}")

@@ -1,4 +1,5 @@
 import datetime
+from typing import List
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
@@ -68,3 +69,11 @@ class Utils:
         if db_category is None:
             raise HTTPException(status_code=404, detail="Category not found")
         return db_category
+    
+    def get_related_events(db: Session, event_id: str):
+        rel_events_ids = crud.get_related_event_ids(db, event_id)
+        event_dicts = []
+        for id in rel_events_ids:
+            db_event = crud.get_event_by_id(db, id).__dict__
+            event_dicts.append(db_event)
+        return event_dicts

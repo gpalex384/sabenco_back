@@ -10,6 +10,10 @@ def get_event_by_category(db: Session, startdate: str, enddate:str, category_id:
                                          models.Event.id == models.EventCategory.event_id,
                                          models.EventCategory.category_id == category_id).all()
 
+def get_related_events_by_event_id(db: Session, event_id: str):
+    db_event = db.query(models.Event).filter(models.Event.id == event_id).first()
+    return Utils.get_related_events(db, db_event.id)
+
 # Create an event given the title, detail, start date and end date
 def create_eventdraft(db: Session, eventdata: schemas.EventDraftBase, user_id: str, event_id: str):
     db_eventdraft = models.EventDraft(**eventdata.dict())
@@ -61,6 +65,16 @@ def assign_category_to_event(db: Session, db_event: models.Event, db_category: m
     db_eventcategory.createdby = user_id
     db_eventcategory.updatedby = user_id
     db.add(db_eventcategory)
+    db.commit()
+
+def link_events(db: Session, db_event_1: models.Event, db_event_2: models.Event, user_id: str, description: str):
+    db_eventlink = models.EventLink()
+    db_eventlink.event1_id = db_event_1.id
+    db_eventlink.event2_id = db_event_2.id
+    db_eventlink.link_description = description
+    db_eventlink.createdby = user_id
+    db_eventlink.updatedby = user_id
+    db.add(db_eventlink)
     db.commit()
 
 def assign_category_to_role(db: Session, db_role: models.Role, db_category: models.Category, user_id: str):
@@ -164,3 +178,13 @@ def get_eventdrafts_by_event(db: Session, event_id: str):
 
 def get_role_by_id(db: Session, role_id: str):
     return db.query(models.Role).filter(models.Role.id == role_id).first()
+
+def get_related_event_ids(db: Session, event_id: str):
+    rel_events_ids = []
+    ev2_related_events = db.query(models.EventLink).filter(models.EventLink.event1_id == event_id)
+    for relevent in ev2_related_events:
+        rel_events_ids.append(relevent.event2_id)
+    ev1_related_events = db.query(models.EventLink).filter(models.EventLink.event2_id == event_id)
+    for relevent in ev1_related_events:
+        rel_events_ids.append(relevent.event1_id)
+    return rel_events_ids

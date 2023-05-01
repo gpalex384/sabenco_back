@@ -1,6 +1,6 @@
-from sqlalchemy import Boolean, Column, Date, ForeignKey, String, text
+from sqlalchemy import Boolean, Column, Date, ForeignKey, String, Table, text
 from database import Base
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import relationship, backref
 
 class User(Base):
     __tablename__="user"
@@ -48,7 +48,6 @@ class Event(Base):
     detail = Column(String)
     startdate = Column(Date)
     enddate = Column(Date)
-    category_id = Column(ForeignKey("category.id"))
     created = Column(Date)
     updated = Column(Date)
     createdby = Column(String)
@@ -57,7 +56,18 @@ class Event(Base):
 
     categories = relationship("EventCategory", back_populates="event")
     eventdrafts = relationship("EventDraft", back_populates="event")
-
+    
+class EventLink(Base):
+    __tablename__="eventlink"
+    event1_id = Column(ForeignKey("event.id"), primary_key=True, index=True)
+    event2_id = Column(ForeignKey("event.id"), primary_key=True, index=True)
+    link_description = Column(String)
+    overseen = Column(Date)
+    overseenby = Column(String)
+    created = Column(Date)
+    updated = Column(Date)
+    createdby = Column(String)
+    updatedby = Column(String)
 
 class EventDraft(Base):
     __tablename__="eventdraft"
