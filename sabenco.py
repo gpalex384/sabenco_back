@@ -34,7 +34,7 @@ def read_events_by_dates_and_category(category_id: str, startdate: str, enddate:
     return db_event_by_category
 
 # Get the events related to an event
-@app.get("/event/{event_id}/linkedevents")
+@app.get("/event/{event_id}/linkedevents", response_model=List[schemas.Event])
 def read_linked_events(event_id: str, db: Session = Depends(get_db)):
     Utils.validate_event(db, event_id)
     related_events = crud.get_related_events_by_event_id(db, event_id)
