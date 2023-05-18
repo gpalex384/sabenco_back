@@ -28,8 +28,6 @@ class EventGetter(GetterDict):
 class UserBase(BaseModel):
     username: str
     usermail: str
-    created: date
-    updated: date
     class Config:
         orm_mode = True
 
@@ -117,15 +115,20 @@ class LinkEvent(BaseModel):
         orm_mode = True
 
 class EventDraftBase(EventBase):
-    event_id: Union[str,None]
     pub_requested: Union[int,None]
     class Config:
         orm_mode = True
 
-class User(UserBase):
-    id: str
+class UserPass(UserBase):
     password: str
+    class Config:
+        orm_mode = True
+
+class User(UserPass):
+    id: str
     role_id: str
+    created: date
+    updated: date
     class Config:
         orm_mode = True
 
@@ -149,9 +152,13 @@ class Event(EventBase):
 
 class EventDraft(EventDraftBase):
     id: str = Field(alias='id')
+    event_id: Union[str,None]
     created: date
     updated: date
     moderator_comment: Union[str,None]
+    published: bool
+    publishdate: Union[date,None]
+    obsolete: bool
     class Config:
         orm_mode = True
 

@@ -36,11 +36,29 @@ class Utils:
             raise HTTPException(status_code=404, detail="User not found")
         return db_user
     
-    def validate_useradmin(db: Session, user_id: str):
-        db_useradmin = crud.get_useradmin_by_id(db, user_id)
+    def validate_user_admin(db: Session, user_id: str):
+        db_useradmin = crud.get_user_role_by_id(db, user_id, 'admin')
         if db_useradmin is None:
             raise HTTPException(status_code=401, detail="User is not an administrator")
         return db_useradmin
+    
+    def validate_user_editor(db: Session, user_id: str):
+        db_user_editor = crud.get_user_role_by_id(db, user_id, 'editor')
+        if db_user_editor is None:
+            db_user_editor = crud.get_user_role_by_id(db, user_id, 'moderator')
+            if db_user_editor is None:
+                db_user_editor = crud.get_user_role_by_id(db, user_id, 'admin')
+                if db_user_editor is None:
+                    raise HTTPException(status_code=401, detail="User is not an editor")
+        return db_user_editor
+    
+    def validate_user_moderator(db: Session, user_id: str):
+        db_user_moderator = crud.get_user_role_by_id(db, user_id, 'moderator')
+        if db_user_moderator is None:
+            db_user_moderator = crud.get_user_role_by_id(db, user_id, 'admin')
+            if db_user_moderator is None:
+                raise HTTPException(status_code=401, detail="User is not a moderator")
+        return db_user_moderator
         
     def validate_event(db: Session, event_id: str):
         db_event = crud.get_event_by_id(db, event_id)

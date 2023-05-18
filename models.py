@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship, backref
 
 class User(Base):
     __tablename__="user"
-    id= Column(String, primary_key=True, index=True)
+    id= Column(String, primary_key=True, index=True, default=text('uuid()'))
     username=Column(String, unique=True)
     usermail=Column(String, unique=True)
     password=Column(String)
@@ -13,6 +13,7 @@ class User(Base):
     updated = Column(Date)
     createdby = Column(String)
     updatedby = Column(String)
+    active = Column(Boolean)
 
     role=relationship("Role", back_populates="users")
 
@@ -62,8 +63,8 @@ class EventLink(Base):
     event1_id = Column(ForeignKey("event.id"), primary_key=True, index=True)
     event2_id = Column(ForeignKey("event.id"), primary_key=True, index=True)
     link_description = Column(String)
-    overseen = Column(Date)
-    overseenby = Column(String)
+    #overseen = Column(Date)
+    #overseenby = Column(String)
     created = Column(Date)
     updated = Column(Date)
     createdby = Column(String)

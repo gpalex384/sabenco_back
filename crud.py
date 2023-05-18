@@ -3,6 +3,17 @@ import models, schemas
 from sqlalchemy.orm import Session, joinedload
 from utils.utils import Utils
 
+def create_user(db: Session, userdata: schemas.UserPass):
+    db_user = models.User(**userdata.dict())
+    db_user.created = datetime.datetime.now()
+    db_user.updated = datetime.datetime.now()
+    db_user.role_id = get_role_by_name(db, "visitor").id
+    db_user.active = True
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
 # Read all the events that belong to a given category whose start date is between two dates
 def get_event_by_category(db: Session, startdate: str, enddate:str, category_id:str):
     return db.query(models.Event).filter(models.Event.startdate >= startdate,
@@ -83,7 +94,16 @@ def assign_category_to_role(db: Session, db_role: models.Role, db_category: mode
     db_categoryrole.role_id = db_role.id
     db_categoryrole.createdby = user_id
     db_categoryrole.updatedby = user_id
+    db_categoryrole.created = datetime.datetime.now()
+    db_categoryrole.updated = datetime.datetime.now()
     db.add(db_categoryrole)
+    db.commit()
+
+def assign_role_to_user(db: Session, role_id: str, db_user: models.User, user_id: str):
+    db_user.role_id = role_id
+    db_user.updated = datetime.datetime.now()
+    db_user.updatedby = user_id
+    db.add(db_user)
     db.commit()
 
 # Edit an event draft given the title, detail, start date, end date and publication requested
@@ -109,10 +129,14 @@ def get_user_by_id(db: Session, user_id: str):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
 # Get the user data given the userId
-def get_useradmin_by_id(db: Session, user_id: str):
-    admin_role_id = db.query(models.Role).filter(models.Role.name == 'admin').first().id
+def get_user_by_username(db: Session, username: str):
+    return db.query(models.User).filter(models.User.username == username).first()
+
+# Get the user role data given the userId
+def get_user_role_by_id(db: Session, user_id: str, role: str):
+    user_role_id = db.query(models.Role).filter(models.Role.name == role).first().id
     return db.query(models.User).filter(models.User.id == user_id,
-                                        models.User.role_id == admin_role_id).first()
+                                        models.User.role_id == user_role_id).first()
 
 def get_category_by_id(db: Session, category_id: str):
     return db.query(models.Category).filter(models.Category.id == category_id).first()
@@ -125,6 +149,7 @@ def publish_eventdraft(db: Session, eventdraft:str, user_id:str):
     # Update eventdraft
     db_eventdraft = get_eventdraft_by_id(db, eventdraft_id=eventdraft)
     db_eventdraft.published = True
+    db_eventdraft.pub_requested = False
     db_eventdraft.publishdate = datetime.datetime.now()
     db_eventdraft.updated = datetime.datetime.now()
     db_eventdraft.updatedby = user_id
@@ -164,6 +189,12 @@ def reject_eventdraft(db: Session, db_eventdraft:models.EventDraft, user_id:str,
 def get_eventdraft_by_id(db: Session, eventdraft_id: str):
     return db.query(models.EventDraft).filter(models.EventDraft.id == eventdraft_id).first()
 
+# Get all the event drafts whose publication is requested
+def get_eventdraft(db: Session):
+    return db.query(models.EventDraft).filter(models.EventDraft.pub_requested == 1,
+                                              models.EventDraft.obsolete == 0,
+                                              models.EventDraft.published == 0).all()
+
 # Get the event data given the event_id
 def get_event_by_id(db: Session, event_id: str):
     return db.query(models.Event).filter(models.Event.id == event_id).first()
@@ -178,6 +209,9 @@ def get_eventdrafts_by_event(db: Session, event_id: str):
 
 def get_role_by_id(db: Session, role_id: str):
     return db.query(models.Role).filter(models.Role.id == role_id).first()
+
+def get_role_by_name(db: Session, rolename: str):
+    return db.query(models.Role).filter(models.Role.name == rolename).first()
 
 def get_related_event_ids(db: Session, event_id: str):
     rel_events_ids = []
