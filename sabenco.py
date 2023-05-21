@@ -5,9 +5,8 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 import hashlib
-import models
 
-import crud, schemas
+import crud, schemas, models
 from database import SessionLocal
 
 from utils.utils import Utils
