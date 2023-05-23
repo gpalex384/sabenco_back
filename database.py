@@ -3,16 +3,9 @@ from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
 import configparser
 
-config = configparser.ConfigParser()
-config.readfp(open(r"./config/configfile.ini"))
-# SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
-# SQLALCHEMY_DATABASE_URL = "postgresql://user:password@postgresserver/db"
-user = config.get('mysql','user')
-password = config.get('mysql','password')
-host = config.get('mysql','host')
-port = config.get('mysql','port')
-db = config.get('mysql','db')
-SQLALCHEMY_DATABASE_URL = "mysql://%s:%s@%s:%s/%s"%(user,password,host,port,db)
+from config.config_getter import get_database_url
+
+SQLALCHEMY_DATABASE_URL = get_database_url()
 
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL

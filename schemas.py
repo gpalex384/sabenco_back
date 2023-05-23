@@ -82,7 +82,7 @@ class EventCategory(BaseModel):
 
 class EventBase(BaseModel):
     title: str
-    detail: Union[str,None]
+    detail: str
     startdate: date
     enddate: Union[date,None] 
     class Config:

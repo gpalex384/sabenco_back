@@ -136,12 +136,12 @@ def edit_eventdraft(eventdata:schemas.EventDraftBase, eventdraft_id: str, db: Se
 
 # Accept an event draft, making it become a published event
 @app.post("/eventdraft/{eventdraft_id}/publish", response_model = schemas.Event)
-def publish_eventdraft(eventdraft_id: str, user_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+def publish_eventdraft(eventdraft_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
     # Exception control
     Utils.validate_eventdraft(db, eventdraft_id)
-    Utils.validate_user_moderator(db, user_id)
+    Utils.validate_user_moderator(db, current_user.id)
     # Publish eventdraft
-    db_published_event = crud.publish_eventdraft(db, eventdraft_id, user_id)
+    db_published_event = crud.publish_eventdraft(db, eventdraft_id, current_user.id)
     return db_published_event
 
 # Reject an event draft, adding a comment from the moderator

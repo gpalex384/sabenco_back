@@ -1,17 +1,22 @@
 import datetime
+
+from fastapi import HTTPException
 import models, schemas
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 from utils.utils import Utils
 
 def create_user(db: Session, userdata: schemas.UserPass):
-    db_user = models.User(**userdata.dict())
-    db_user.created = datetime.datetime.now()
-    db_user.updated = datetime.datetime.now()
-    db_user.role_id = get_role_by_name(db, "visitor").id
-    db_user.active = True
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
+    try:
+        db_user = models.User(**userdata.dict())
+        db_user.created = datetime.datetime.now()
+        db_user.updated = datetime.datetime.now()
+        db_user.role_id = get_role_by_name(db, "visitor").id
+        db_user.active = True
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+    except RuntimeError:
+        raise HTTPException(status_code=400, detail="Incorrect user data") 
     return db_user
 
 # Read all the events that belong to a given category whose start date is between two dates
@@ -27,13 +32,16 @@ def get_related_events_by_event_id(db: Session, event_id: str):
 
 # Create an event given the title, detail, start date and end date
 def create_eventdraft(db: Session, eventdata: schemas.EventDraftBase, user_id: str, event_id: str):
-    db_eventdraft = models.EventDraft(**eventdata.dict())
-    db_eventdraft.event_id = event_id
-    db_eventdraft.createdby = user_id
-    db_eventdraft.updatedby = user_id
-    db.add(db_eventdraft)
-    db.commit()
-    db.refresh(db_eventdraft)
+    try:
+        db_eventdraft = models.EventDraft(**eventdata.dict())
+        db_eventdraft.event_id = event_id
+        db_eventdraft.createdby = user_id
+        db_eventdraft.updatedby = user_id
+        db.add(db_eventdraft)
+        db.commit()
+        db.refresh(db_eventdraft)
+    except:
+        raise HTTPException(status_code=401, detail="Incorrect event data")
     return db_eventdraft
 
 def create_category(db: Session, categorydata: schemas.CategoryBase, user_id: str):
@@ -128,7 +136,7 @@ def get_event_by_id(db: Session, event_id: str):
 def get_user_by_id(db: Session, user_id: str):
     return db.query(models.User).filter(models.User.id == user_id).first()
 
-# Get the user data given the userId
+# Get the user data given the username
 def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
 
@@ -140,6 +148,9 @@ def get_user_role_by_id(db: Session, user_id: str, role: str):
 
 def get_category_by_id(db: Session, category_id: str):
     return db.query(models.Category).filter(models.Category.id == category_id).first()
+
+def get_category_by_name(db: Session, name: str):
+    return db.query(models.Category).filter(models.Category.name == name).first()
 
 def get_eventcategory_by_category_id(db: Session, category_id: str):
     return db.query(models.EventCategory).filter(models.EventCategory.category_id == category_id).all()
