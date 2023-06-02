@@ -4,9 +4,8 @@ from numpy import size
 from database import SessionLocal
 from sabenco import app
 from sql.restore_test_db import restore_test_database
-from sqlalchemy.orm import Session
 
-import crud, sabenco
+import crud
 
 client = TestClient(app)
 
@@ -58,6 +57,19 @@ def test_register_no_usermail():
     )
     assert response.status_code == 422 # Unprocessable Entity
     assert response.json()['detail'][0]['msg'] == 'field required'
+
+def test_register_incorrect_usermail():
+    userdata = {
+            "username": "visitor",
+            "usermail": "visitor.com",
+            "password": "visitor"
+        }
+    response = client.post(
+        "users/register",
+        json= userdata
+    )
+    assert response.status_code == 400 # Unprocessable Entity
+    assert response.json() == {"detail":"Incorrect email format"}
 
 def test_register_no_password():
     userdata = {
@@ -156,6 +168,7 @@ def test_create_eventdraft_no_title():
             json= event_json
         )
     assert response.status_code == 422 # Unprocessable Entity
+    assert response.json()['detail'][0]['msg'] == 'field required'
 
 def test_create_eventdraft_no_detail():
     event_json = {
@@ -170,6 +183,7 @@ def test_create_eventdraft_no_detail():
             json= event_json
         )
     assert response.status_code == 422 # Unprocessable Entity
+    assert response.json()['detail'][0]['msg'] == 'field required'
 
 def test_create_eventdraft_no_startdate():
     event_json = {
@@ -184,6 +198,7 @@ def test_create_eventdraft_no_startdate():
             json= event_json
         )
     assert response.status_code == 422 # Unprocessable Entity
+    assert response.json()['detail'][0]['msg'] == 'field required'
 
 def test_create_eventdraft_wrong_enddate():
     event_json = {
@@ -199,6 +214,7 @@ def test_create_eventdraft_wrong_enddate():
             json= event_json
         )
     assert response.status_code == 422 # Unprocessable Entity
+    assert response.json()['detail'][0]['msg'] == 'invalid date format'
 
 def test_create_eventdraft_no_pubrequested_success():
     event_json = {
@@ -229,7 +245,7 @@ def test_publish_eventdraft_eventdraft_not_found():
     assert response.status_code == 404
     assert response.json() == {"detail":"Event draft not found"}
 
-def test_publish_eventdraft_eventdraft_not_found():
+def test_publish_eventdraft_unauthorized():
     db_eventdrafts = crud.get_eventdraft(SessionLocal())
     eventdraft_id = db_eventdrafts[0].id
     response = client.post(

@@ -65,6 +65,8 @@ async def read_users_me(db: Session = Depends(get_db), current_user: models.User
 # Register new user
 @app.post("/users/register", response_model= schemas.UserBase)
 def register_new_user(userdata: schemas.UserPass, db: Session = Depends(get_db)):
+    Utils.validate_email(userdata.usermail)
+    Utils.validate_existing_user(userdata, db)
     userdata.password = hashlib.sha1(bytes(userdata.password, 'utf-8')).hexdigest()
     db_user = crud.create_user(db, userdata)
     return db_user

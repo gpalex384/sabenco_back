@@ -2,7 +2,9 @@ import datetime
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
 
-import models, crud
+import models, crud, re
+
+import schemas
 
 class Utils:
 
@@ -97,3 +99,17 @@ class Utils:
             db_events.append(db_event)
         #return event_dicts
         return db_events
+    
+    def validate_email(email: str):
+        pat = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+        if not re.match(pat,email):
+            raise HTTPException(status_code=400, detail="Incorrect email format")
+        
+    def validate_existing_user(userdata: schemas.UserPass, db: Session):
+        db_user_sameusername = crud.get_user_by_username(db, userdata.username)
+        if db_user_sameusername:
+            raise HTTPException(status_code=403, detail="The username already exists in the system.")
+        db_user_sameusermail = crud.get_user_by_usermail(db, userdata.usermail)
+        if db_user_sameusermail:
+            raise HTTPException(status_code=403, detail="The usermail already exists in the system.")
+

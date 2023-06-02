@@ -4,6 +4,7 @@ from fastapi import HTTPException
 import models, schemas
 from sqlalchemy.orm import Session
 from utils.utils import Utils
+from sqlalchemy.exc import IntegrityError
 
 def create_user(db: Session, userdata: schemas.UserPass):
     try:
@@ -45,12 +46,16 @@ def create_eventdraft(db: Session, eventdata: schemas.EventDraftBase, user_id: s
     return db_eventdraft
 
 def create_category(db: Session, categorydata: schemas.CategoryBase, user_id: str):
-    db_category = models.Category(**categorydata.dict())
-    db_category.createdby = user_id
-    db_category.updatedby = user_id
-    db.add(db_category)
-    db.commit()
-    db.refresh(db_category)
+    try:
+        db_category = models.Category(**categorydata.dict())
+        db_category.createdby = user_id
+        db_category.updatedby = user_id
+        db_category.active = True
+        db.add(db_category)
+        db.commit()
+        db.refresh(db_category)      
+    except:
+        raise HTTPException(status_code=400, detail="Category already exists")
     return db_category
 
 def edit_category(db: Session, categorydata: schemas.CategoryBase, user_id: str, category_id: str):
@@ -139,6 +144,10 @@ def get_user_by_id(db: Session, user_id: str):
 # Get the user data given the username
 def get_user_by_username(db: Session, username: str):
     return db.query(models.User).filter(models.User.username == username).first()
+
+# Get the user data given the usermail
+def get_user_by_usermail(db: Session, usermail: str):
+    return db.query(models.User).filter(models.User.usermail == usermail).first()
 
 # Get the user role data given the userId
 def get_user_role_by_id(db: Session, user_id: str, role: str):
