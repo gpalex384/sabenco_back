@@ -4,7 +4,6 @@ from fastapi import HTTPException
 import models, schemas
 from sqlalchemy.orm import Session
 from utils.utils import Utils
-from sqlalchemy.exc import IntegrityError
 
 def create_user(db: Session, userdata: schemas.UserPass):
     try:
