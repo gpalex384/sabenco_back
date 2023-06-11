@@ -1,6 +1,6 @@
-from sqlalchemy import Boolean, Column, Date, ForeignKey, String, Table, text
+from sqlalchemy import Boolean, Column, Date, ForeignKey, String, text
 from database import Base
-from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm import relationship
 
 class User(Base):
     __tablename__="user"

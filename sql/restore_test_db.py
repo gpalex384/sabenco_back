@@ -1,4 +1,3 @@
-import configparser
 import MySQLdb
 from sqlalchemy import text
 

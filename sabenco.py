@@ -1,6 +1,5 @@
 import datetime
 from typing import List, Union
-from typing_extensions import Annotated
 from fastapi import Depends, FastAPI, HTTPException, status
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -71,6 +70,22 @@ def register_new_user(userdata: schemas.UserPass, db: Session = Depends(get_db))
     db_user = crud.create_user(db, userdata)
     return db_user
 
+# Get the user data given the userId
+@app.get("/users/{user_id}", response_model=schemas.User)
+def read_user(user_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    return Utils.validate_user(db, user_id)
+
+# Assign role to user
+@app.post("/users/{user_id}/role/{role_id}")
+def assign_role_to_user(role_id: str, user_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    # Exception control
+    Utils.validate_user_admin(db, current_user.id)
+    db_role = Utils.validate_role(db, role_id)
+    db_user = Utils.validate_user(db, user_id)
+    # Assign category to event
+    crud.assign_role_to_user(db, db_role.id, db_user, current_user.id)
+    return {"ok": "The user '%s' has been linked to the role '%s'" % (db_user.username,db_role.name)}
+
 # Get the events of a category which startdate is between two dates
 @app.get("/event/{category_id}/{startdate}/{enddate}", response_model = List[schemas.Event])
 def read_events_by_dates_and_category(category_id: str, startdate: str, enddate: str, db: Session = Depends(get_db)):
@@ -90,20 +105,96 @@ def read_linked_events(event_id: str, db: Session = Depends(get_db)):
     related_events = crud.get_related_events_by_event_id(db, event_id)
     return related_events
 
-# Get the user data given the userId
-@app.get("/users/{user_id}", response_model=schemas.User)
-def read_user(user_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
-    return Utils.validate_user(db, user_id)
+# Unpublish an event
+@app.put("/event/{event_id}/unpublish", response_model = schemas.Event)
+def unpublish_event(event_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    # Exception control
+    Utils.validate_user_admin(db, current_user.id)
+    db_event = Utils.validate_event(db, event_id)
+    # Unpublish event
+    db_unpublished_event = crud.publish_unpublish_event(db, db_event, current_user.id, False)
+    return db_unpublished_event
+
+# Publish an existing unpublished event
+@app.put("/event/{event_id}/publish", response_model = schemas.Event)
+def publish_event(event_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    # Exception control
+    Utils.validate_user_admin(db, current_user.id)
+    db_event = Utils.validate_event(db, event_id)
+    # Publish event
+    db_published_event = crud.publish_unpublish_event(db, db_event, current_user.id, True)
+    return db_published_event
+
+# Assign category to an event
+@app.post("/event/{event_id}/category/{category_id}")
+def assign_category_to_event(event_id: str, category_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    # Exception control
+    Utils.validate_user_admin(db, current_user.id)
+    db_event = Utils.validate_event(db, event_id)
+    db_category = Utils.validate_category(db, category_id)
+    # Assign category to event
+    crud.assign_category_to_event(db, db_event, db_category, current_user.id)
+    return {"ok": "The event '%s' has been classified in the category '%s'" % (db_event.title,db_category.name)}
 
 # Get role by id
 @app.get("/roles/{role_id}", response_model=schemas.Role)
 def read_role(role_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
     return Utils.validate_role(db, role_id)
 
+# Get all categories unregistered user
+@app.get("/category", response_model=List[schemas.Category])
+def read_all_categories(db: Session = Depends(get_db)):
+    return crud.get_categories(db)
+
+# Get all categories registered user
+@app.get("/category/registered", response_model=List[schemas.Category])
+def read_registered_categories(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    return crud.get_categories_registered(db, current_user.role_id)
+
 # Get category by id
-@app.get("/categories/{category_id}", response_model=schemas.Category)
+@app.get("/category/{category_id}", response_model=schemas.Category)
 def read_category(category_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
     return Utils.validate_category(db, category_id)
+
+# Assign category to role
+@app.post("/category/{category_id}/role/{role_id}")
+def assign_category_to_role(role_id: str, category_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    # Exception control
+    Utils.validate_user_admin(db, current_user.id)
+    db_role = Utils.validate_role(db, role_id)
+    db_category = Utils.validate_category(db, category_id)
+    # Assign category to event
+    crud.assign_category_to_role(db, db_role, db_category, current_user.id)
+    return {"ok": "The category '%s' has been linked to the role '%s'" % (db_category.name,db_role.name)}
+
+# Create category
+@app.post("/category/create", response_model= schemas.Category)
+def create_category(categorydata: schemas.CategoryBase, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    # Exception control
+    Utils.validate_user_admin(db, current_user.id)
+    # Create category
+    db_category = crud.create_category(db, categorydata, current_user.id)
+    return db_category
+
+# Edit category
+@app.put("/category/{category_id}/update", response_model= schemas.Category)
+def edit_category(category_id: str, categorydata: schemas.CategoryBase, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    # Exception control
+    Utils.validate_user_admin(db, current_user.id)
+    Utils.validate_category(db, category_id)
+    # Update category
+    db_category = crud.edit_category(db, categorydata, current_user.id, category_id)
+    return db_category
+
+# Delete category
+@app.delete("/category/{category_id}/delete")
+def delete_category(category_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
+    # Exception control
+    Utils.validate_user_admin(db, current_user.id)
+    Utils.validate_category(db, category_id)
+    # Delete category
+    deleted_category_name = crud.delete_category(db, category_id)
+    return {"ok": "The category '" + deleted_category_name + "' has been deleted"}
 
 # Get event drafts created by user (not posted / pending moderation)
 @app.get("/eventdrafts", response_model=List[schemas.EventDraft])
@@ -157,37 +248,6 @@ def reject_eventdraft(comment: str, eventdraft_id: str, db: Session = Depends(ge
     db_rejected_eventdraft = crud.reject_eventdraft(db, db_eventdraft, current_user.id, comment)
     return db_rejected_eventdraft
 
-# Unpublish an event
-@app.put("/event/{event_id}/unpublish", response_model = schemas.Event)
-def unpublish_event(event_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
-    # Exception control
-    Utils.validate_user_admin(db, current_user.id)
-    db_event = Utils.validate_event(db, event_id)
-    # Unpublish event
-    db_unpublished_event = crud.publish_unpublish_event(db, db_event, current_user.id, False)
-    return db_unpublished_event
-
-# Publish an existing unpublished event
-@app.put("/event/{event_id}/publish", response_model = schemas.Event)
-def publish_event(event_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
-    # Exception control
-    Utils.validate_user_admin(db, current_user.id)
-    db_event = Utils.validate_event(db, event_id)
-    # Publish event
-    db_published_event = crud.publish_unpublish_event(db, db_event, current_user.id, True)
-    return db_published_event
-
-# Assign category to an event
-@app.post("/event/{event_id}/category/{category_id}")
-def assign_category_to_event(event_id: str, category_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
-    # Exception control
-    Utils.validate_user_admin(db, current_user.id)
-    db_event = Utils.validate_event(db, event_id)
-    db_category = Utils.validate_category(db, category_id)
-    # Assign category to event
-    crud.assign_category_to_event(db, db_event, db_category, current_user.id)
-    return {"ok": "The event '%s' has been classified in the category '%s'" % (db_event.title,db_category.name)}
-
 # Link two events
 @app.post("/eventlink/{event_id_1}/{event_id_2}")
 def link_two_events(event_id_1: str, event_id_2: str, description: Union[None,str] = None, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
@@ -198,54 +258,3 @@ def link_two_events(event_id_1: str, event_id_2: str, description: Union[None,st
     # Link events
     crud.link_events(db, db_event_1, db_event_2, current_user.id, description)
     return {"ok": "The events '%s' and '%s' have been linked" % (db_event_1.title,db_event_2.title)}
-
-# Assign category to role
-@app.post("/category/{category_id}/role/{role_id}")
-def assign_category_to_role(role_id: str, category_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
-    # Exception control
-    Utils.validate_user_admin(db, current_user.id)
-    db_role = Utils.validate_role(db, role_id)
-    db_category = Utils.validate_category(db, category_id)
-    # Assign category to event
-    crud.assign_category_to_role(db, db_role, db_category, current_user.id)
-    return {"ok": "The category '%s' has been linked to the role '%s'" % (db_category.name,db_role.name)}
-
-# Assign role to user
-@app.post("/users/{user_id}/role/{role_id}")
-def assign_role_to_user(role_id: str, user_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
-    # Exception control
-    Utils.validate_user_admin(db, current_user.id)
-    db_role = Utils.validate_role(db, role_id)
-    db_user = Utils.validate_user(db, user_id)
-    # Assign category to event
-    crud.assign_role_to_user(db, db_role.id, db_user, current_user.id)
-    return {"ok": "The user '%s' has been linked to the role '%s'" % (db_user.username,db_role.name)}
-
-# Create category
-@app.post("/category/create", response_model= schemas.Category)
-def create_category(categorydata: schemas.CategoryBase, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
-    # Exception control
-    Utils.validate_user_admin(db, current_user.id)
-    # Create category
-    db_category = crud.create_category(db, categorydata, current_user.id)
-    return db_category
-
-# Edit category
-@app.put("/category/{category_id}/update", response_model= schemas.Category)
-def edit_category(category_id: str, categorydata: schemas.CategoryBase, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
-    # Exception control
-    Utils.validate_user_admin(db, current_user.id)
-    Utils.validate_category(db, category_id)
-    # Update category
-    db_category = crud.edit_category(db, categorydata, current_user.id, category_id)
-    return db_category
-
-# Delete category
-@app.delete("/category/{category_id}/delete")
-def delete_category(category_id: str, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_active_user)):
-    # Exception control
-    Utils.validate_user_admin(db, current_user.id)
-    Utils.validate_category(db, category_id)
-    # Delete category
-    deleted_category_name = crud.delete_category(db, category_id)
-    return {"ok": "The category '" + deleted_category_name + "' has been deleted"}

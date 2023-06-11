@@ -1,4 +1,3 @@
-from fastapi import Depends
 from fastapi.testclient import TestClient
 from numpy import size
 from database import SessionLocal
@@ -310,5 +309,5 @@ def test_read_events_category_not_found():
     assert response.status_code == 404
     assert response.json() == {"detail":"Category not found"}
 
-restore_test_database()
+    restore_test_database()
 

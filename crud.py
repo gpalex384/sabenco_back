@@ -4,13 +4,14 @@ from fastapi import HTTPException
 import models, schemas
 from sqlalchemy.orm import Session
 from utils.utils import Utils
+from sqlalchemy import exists
 
 def create_user(db: Session, userdata: schemas.UserPass):
     try:
         db_user = models.User(**userdata.dict())
         db_user.created = datetime.datetime.now()
         db_user.updated = datetime.datetime.now()
-        db_user.role_id = get_role_by_name(db, "visitor").id
+        db_user.role_id = get_role_by_name(db, "registered").id
         db_user.active = True
         db.add(db_user)
         db.commit()
@@ -162,6 +163,16 @@ def get_category_by_name(db: Session, name: str):
 
 def get_eventcategory_by_category_id(db: Session, category_id: str):
     return db.query(models.EventCategory).filter(models.EventCategory.category_id == category_id).all()
+
+def get_categories_registered(db: Session, role_id: str):
+    db_categories = get_categories(db)
+    db_categories_role = db.query(models.Category).filter(models.CategoryRole.role_id == role_id,
+                                            models.CategoryRole.category_id == models.Category.id).all()
+    db_categories.extend(db_categories_role)
+    return db_categories
+
+def get_categories(db: Session):
+    return db.query(models.Category).filter(~ exists().where(models.CategoryRole.category_id == models.Category.id)).all()
 
 # Publishes an event draft into an event
 def publish_eventdraft(db: Session, eventdraft:str, user_id:str):

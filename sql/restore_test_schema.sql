@@ -46,8 +46,6 @@ CREATE TABLE `categoryrole` (
   CONSTRAINT `categoryrole_role_FK` FOREIGN KEY (`role_id`) REFERENCES `role` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 DROP TABLE IF EXISTS `event`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `event` (
   `id` varchar(36) NOT NULL DEFAULT uuid(),
   `title` varchar(50) NOT NULL,
@@ -99,7 +97,7 @@ CREATE TABLE `eventdraft` (
   `updatedby` varchar(36) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `eventdraft_event_FK` (`event_id`),
-  CONSTRAINT `eventdraft_event_FK` FOREIGN KEY (`event_id`) REFERENCES `event` (`id`)
+  CONSTRAINT `eventdraft_event_FK` FOREIGN KEY (`event_id`) REFERENCES `event` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 DROP TABLE IF EXISTS `eventlink`;
 CREATE TABLE `eventlink` (
