@@ -7,3 +7,17 @@ This project is therefore designed to reinforce the relationship between the con
 
 
 The initial scope of this project is to create a proof of concept of an API that provides data related to events such as historical, cultural, social or scientific events. 
+
+
+
+How to run it:
+1. Open terminal on project root folder.
+2. Run "uvicorn sabenco:app --reload" command.
+
+** You may have installed the following parts:**
+- Python interpreter (3.6+)
+- FastAPI
+- Uvicorn
+
+Check FastAPI documentation
+https://fastapi.tiangolo.com/
